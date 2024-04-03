@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding="utf-8"?>
+
+<bibliography    xml:id="reference"
+    xmlns="http://docbook.org/ns/docbook"
+    xmlns:xl="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:ns5="http://www.w3.org/1998/Math/MathML"
+    xmlns:ns4="http://www.w3.org/1999/xhtml"
+    xmlns:ns3="http://www.w3.org/2000/svg"
+    xmlns:ns="http://docbook.org/ns/docbook">
+
+<bibliomixed xml:id="ref.usb_msc_design_program">
+  <bibliosource><link xl:href="http://www.lvr.com/usbms.htm">USB Mass Storage - Designing and Programming Devices and Embedded Hosts</link></bibliosource>
+  <author>Jan Axelson</author>
+</bibliomixed>
+
+<bibliomixed xml:id="ref.usb_msc_intro">
+  <bibliosource><link xl:href="http://www.lvr.com/usbmsintr.htm">USB Mass Storage - From the Introduction</link></bibliosource>
+  <author>Jan Axelson</author>
+</bibliomixed>
+
+<bibliomixed xml:id="ref.mass_storage_basics">
+  <bibliosource><link xl:href="http://www.lvr.com/files/usb_mass_storage_chapter_1.pdf">Mass Storage Basics</link></bibliosource>
+  <author>Jan Axelson</author>
+</bibliomixed>
+
+<bibliomixed xml:id="ref.phison_up19_ps225150_ds">
+  <bibliosource><link xl:href="http://www.mydigit.net/read.php?tid=261431">群联 Phison UP19 / PS2251-50 Datasheet</link></bibliosource>
+  <author>mydigit</author>
+</bibliomixed>
+
+<bibliomixed xml:id="ref.usb_approved_class_spec_msc">
+  <bibliosource><link xl:href="http://www.usb.org/developers/devclass_docs/">USB Approved Class Specification Documents - Mass Storage</link></bibliosource>
+  <author>usb org</author>
+</bibliomixed>
+
+<bibliomixed xml:id="ref.usb_complete_4th_download">
+  <bibliosource><link xl:href="http://download.csdn.net/source/1592740">USB Complete 4th Edition</link></bibliosource>
+  <author>richard19880121</author>
+</bibliomixed>
+
+<bibliomixed xml:id="ref.usb_msc_spec_overview">
+  <bibliosource><link xl:href="http://www.usb.org/developers/devclass_docs/Mass_Storage_Specification_Overview_v1.4_2-19-2010.pdf">Mass Storage Class Specification Overview 1.4</link></bibliosource>
+  <author>usb org</author>
+</bibliomixed>
+
+</bibliography>

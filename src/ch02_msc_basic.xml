@@ -1,0 +1,346 @@
+<?xml version='1.0' encoding="utf-8"?>
+
+<!DOCTYPE chapter
+[
+
+<!ENTITY % crl_ent PUBLIC "crl.ent" 'http://www.crifan.com/files/res/docbook/entity/crl.ent'>
+%crl_ent;
+
+]>
+
+<chapter    xml:id="ch02_msc_basic"
+    xmlns="http://docbook.org/ns/docbook"
+    xmlns:xl="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:ns5="http://www.w3.org/1998/Math/MathML"
+    xmlns:ns4="http://www.w3.org/1999/xhtml"
+    xmlns:ns3="http://www.w3.org/2000/svg"
+    xmlns:ns="http://docbook.org/ns/docbook">
+
+<title>USB Mass Storage大容量存储的基本知识</title>
+<abstract></abstract>
+<para>【todo】待整理：<link xl:href="http://www.yaabou.com/blog/?p=15">Linux USB MASS Storage driver流程图</link></para>
+<para></para>
+<para>USB Mass Storage所对应的层次和要实现哪些东西：</para>
+<figure id="fg.usb_msc_framework"><title>USB Mass Storage Framework</title>
+    <mediaobject>
+        <imageobject role="html">
+            <imagedata fileref="images/usb_msc_framework.png" align="left" scalefit="0" width="100%" />
+        </imageobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/usb_msc_framework.png" align="center" scalefit="1" width="100%"/>
+        </imageobject>
+    </mediaobject>
+</figure>
+<para>PC电脑和U盘之间的关系，以及物理上的组成，可以用下图表示：</para>
+<figure id="fg.pc_and_udisk"><title>PC和U盘</title>
+    <mediaobject>
+        <imageobject role="html">
+            <imagedata fileref="images/pc_and_udisk.jpg" align="left" scalefit="0" width="100%" />
+        </imageobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/pc_and_udisk.jpg" align="center" scalefit="1" width="100%"/>
+        </imageobject>
+    </mediaobject>
+</figure>
+<para>更深入的剖析，对于普通U盘的内部结构，则是一个USB物理接口，加上对应的控制芯片（微控制器（含Nand Flash的控制器）+ USB设备控制器）和一个Nand Flash芯片：</para>
+<figure id="fg.pc_and_udisk_internal"><title>PC和U盘的芯片内部结构</title>
+    <mediaobject>
+        <imageobject role="html">
+            <imagedata fileref="images/pc_and_udisk_internal.jpg" align="left" scalefit="0" width="100%" />
+        </imageobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/pc_and_udisk_internal.jpg" align="center" scalefit="1" width="100%"/>
+        </imageobject>
+    </mediaobject>
+</figure>
+<para>上述PC电脑和U盘的物理关系，以群联的PS2251-50 USB 2.0 Flash Controller为例，对应的逻辑关系为：</para>
+<figure id="fg.pc_and_udisk_internal_logic"><title>PC和U盘的内部逻辑框图</title>
+    <mediaobject>
+        <imageobject role="html">
+            <imagedata fileref="images/pc_and_udisk_internal_logic.jpg" align="left" scalefit="0" width="100%" />
+        </imageobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/pc_and_udisk_internal_logic.jpg" align="center" scalefit="1" width="100%"/>
+        </imageobject>
+    </mediaobject>
+</figure>
+<para>关于U盘容量，再多解释一句：</para>
+<para>一般U盘的大小，就是对应着这个Nand Flash芯片的容量，比如2GB，4GB，8GB等。</para>
+<para>当然，比如一个8GB的U盘，内部也可以用两块4GB的Nand Flash芯片来构成。</para>
+<para>PC和U盘的之间的抽象的逻辑关系，可用下图来表示：</para>
+<figure id="fg.pc_and_msc_dev"><title>PC和USB MSC设备</title>
+    <mediaobject>
+        <imageobject role="html">
+            <imagedata fileref="images/pc_and_msc_dev.png" align="left" scalefit="0" width="100%" />
+        </imageobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/pc_and_msc_dev.png" align="center" scalefit="1" width="100%"/>
+        </imageobject>
+    </mediaobject>
+</figure>
+<para>上图中，Storage Media，就是我们例子中的Nand Flash芯片。</para>
+<para>而例子中的那个控制芯片，是Microcontroller with embedded USB device controller 和Media Controller的集合。</para>
+<para>而上图中的USB MSC（Mass Storage Class） Device，从应用领域来说，可以分为以下几类：</para>
+<figure id="fg.usb_msc_classify"><title>USB MSC的分类</title>
+    <mediaobject>
+        <imageobject role="html">
+            <imagedata fileref="images/usb_msc_classify.png" align="left" scalefit="0" width="100%" />
+        </imageobject>
+        <imageobject role="fo">
+            <imagedata fileref="images/usb_msc_classify.png" align="center" scalefit="1" width="100%"/>
+        </imageobject>
+    </mediaobject>
+</figure>
+<para>而像上述例子中那样的常用的U盘，属于上图中的Flash Drive，即，物理上存储数据的介质用的是Flash Memory，比如例子中的Nand Flash芯片，对应的，Media Controller，也就是Nand Flash的Controller，负责从Nand Flash芯片中读写数据。</para>
+<para>USB MSC设备中的固件（firmware）或者硬件（hardware），必须要实现下面这些功能：</para>
+<orderedlist>
+    <listitem>检测和响应通用的USB Request和USB总线上的事件。</listitem>
+    <listitem>检测和响应来自USB设备的关于信息或者动作的USB Mass Storage Request。</listitem>
+    <listitem>检测和响应，从USB Transfer中获得的SCSI Command。这些业界标准的命令，是用来获得状态信息，控制设备操作，向存储介质块中读取（read block）和写入（write block）数据的。</listitem>
+</orderedlist>
+<para>另外，设备如果想要向存储介质中，创建/读取/写入，文件/文件夹的话，那么就涉及到文件系统，还要实现对应的文件系统。嵌入式系统中常见的文件系统有FAT16或FAT32。</para>
+
+<sect1 xml:id="usb_mass_storage_protocols"><title>USB Mass Storage相关的协议</title>
+    <para>除了本身USB的协议之外，Mass Storage作为其中USB的一种，USB Mass Storage自己又有相关的协议，对应的协议可以去官网下载：</para>
+    <para><link xl:href="http://www.usb.org/developers/devclass_docs/" /></para>
+    <para>中有关于Mass Storage相关的，一堆的协议：</para>
+    <itemizedlist>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/Mass_Storage_Specification_Overview_v1.4_2-19-2010.pdf">Mass Storage Class Specification Overview 1.4 </link></listitem>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/usbmassbulk_10.pdf">Mass Storage Bulk Only 1.0 </link></listitem>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/usb_msc_cbi_1.1.pdf">Mass Storage Control/Bulk/Interrupt (CBI) Specification 1.1  </link></listitem>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/usbmass-ufi10.pdf">Mass Storage UFI Command Specification 1.0 </link></listitem>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/usb_msc_boot_1.0.pdf">Mass Storage Bootability Specification 1.0 </link></listitem>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/Lockable_Mass_Storage_Spec_and_Adopters_Agreement.zip">Lockable Mass Storage Specification 1.0 and Adopters Agreement - Lockable Mass Storage IP Disclosure</link></listitem>
+        <listitem><link xl:href="http://www.usb.org/developers/devclass_docs/uasp_1_0.zip">USB Attached SCSI Protocol (UASP) v1.0 and Adopters Agreement </link></listitem>
+    </itemizedlist>
+    <para>说实话，咋一看，这么多协议，不知道驴年马月才能看完和真正理解。</para>
+    <para>不过，等待了解了这些协议的关系之后，会发现，其实需要特别关注和研究的协议，并不是很多，至少很多协议可以不用太关心。</para>
+    
+    <sect2 xml:id="usb_protocols_intro"><title>USB Mass Storage相关协议简介</title>
+        <para>凡事至少得对整体系统有个大致了解后，才能继续下一步的深入的开发。</para>
+        <para>所以，我们的目的，首先是要搞懂这么多协议之间都是啥关系，以及具体写U盘驱动的话，要看哪些协议。</para>
+        <para>从上面那一堆协议的名词上，我们就能看到，第一个：</para>
+        <para><emphasis>Mass Storage Class Specification Overview 1.4</emphasis></para>
+        <para>就是对于这么多协议的概述，其中介绍了各个协议的关系。</para>
+        <para>下面就把其中的主要内容摘出来，解释如下：</para>
+        <para>关于USB Mass Storage相关的一些协议，都是由一个叫做USB Mass Storage Class Working Group (CWG)的组织定义的，如上所述，包括下面一些协议：</para>
+        <itemizedlist>
+            <listitem>USB Mass Storage Class Control/Bulk/Interrupt (CBI) Transport</listitem>
+            <listitem>USB Mass Storage Class Bulk-Only (BBB) Transport</listitem>
+            <listitem>USB Mass Storage Class Universal Floppy Interface (UFI) Command Specification</listitem>
+            <listitem>USB Mass Storage Class Bootability Specification</listitem>
+            <listitem>USB Mass Storage Class Compliance Test Specification</listitem>
+            <listitem>USB Lockable Storage Devices Feature Specification (LSD FS)</listitem>
+            <listitem>USB Mass Storage Class USB Attached SCSI Protocol (UASP)</listitem>
+        </itemizedlist>
+        <para>对于这些协议，我们一个个的简单解释和分析一下：</para>
+        
+        <sect3 xml:id="control_bulk_cbi"><title>USB MSC Control/Bulk/Interrupt (CBI) Transport</title>
+            <para>我们所关注的U盘，就是所谓的MSC设备，大容量存储设备。</para>
+            <para>U盘的功能，就是数据存储。而对应的数据传输，用的是USB中的Bulk Transfer。而Control Transfer是用来发送Class-Specific的信息和Clear Stall。而其他方面的信息交换，是用Bulk-only协议。</para>
+            <para>而对于CBI，算是Bulk-only的替代品，也可以用来信息交换，但是只能用于，full-speed的软盘（Floppy drive），也不推荐将CBI用于其它新出的MSC设备上。</para>
+            <para>【总结】</para>
+            <para>USB MSC Control/Bulk/Interrupt (CBI) 主要用于Floppy设备，对于我们关心的U盘，用不到，不需要太关心，可以忽略之。</para>
+        </sect3>
+        
+        <sect3 xml:id="bbb"><title>USB MSC Bulk-Only (BBB) Transport</title>
+            <para>如上所述，Bulk-only是USB设备端，此处的U盘和USB Host端，即普通PC，之间信息交换的协议。</para>
+            <para>Bulk Only Transport，也被简称为BOT。</para>
+            
+            <sect4 xml:id="why_call_bbb"><title>为何USB MSC中Bulk-only Transport被叫做 BBB</title>
+                <para>USB MSC中的Bulk-Only 常被叫做BBB，是相对于前面所说的CBI来说的。</para>
+                <para>看起来，USB MSC的CBI，是Control/Bulk/Interrupt的简写，但是其具体含义是：</para>
+                <orderedlist>
+                    <listitem><emphasis>Control</emphasis>
+                        <para>Control端点用于，除了传送标准的USB请求之外，还用于通过Class-specific的请求，将命令块（command block）传给设备；即Control端点传送命令块</para>
+                    </listitem>
+                    <listitem><emphasis>Bulk</emphasis>
+                        <para>Bulk In和Bulk Out端点用于在主机（Host）和设备（Device）之间数据的传输。即，Bulk用于传送数据</para>
+                    </listitem>
+                    <listitem><emphasis>Interrupt</emphasis>
+                        <para>Interrupt端点用于（设备向主机）通知命令完成。即Interrupt用于传送状态信息</para>
+                    </listitem>
+                </orderedlist>
+                <para>因此，上面的USB MSC的Control/Bulk/Interrupt，才被简称为CBI。</para>
+                <para>和CBI中的用三种不同的端点来传送三种类型的信息，而不同的是，Bulk-only传送这些全部的信息，都之用Bulk端点。</para>
+                <para>即用Bulk端点来传送命令块，数据，状态，因此，才类似于Control/Bulk/Interrupt被简称为CBI一样，而Bulk/Bulk/Bulk被简称为BBB。</para>
+                <para></para>
+                <para>【总结】</para>
+                <para>USB MSC传输协议分CBI和BOT，而BOT又称为BBB。</para>
+            </sect4>
+            
+            <sect4 xml:id="exist_cbi_why_bbb"><title>为何已经有了CBI，又再弄出个BBB</title>
+                <para>既然，对于USB MSC设备来说，USB设备和USB主机之间的通信，已经定义了一个CBI规范，那么为何还要再新定义一个Bulk-only（BBB）呢？</para>
+                <para>我的理解是，那是因为，最开始USB协议定义的时候，那时候市场上的Floppy Disk还是用的很多的。</para>
+                <para>所以针对Floppy设备特点，分别定义了多个端点来传输不同的信息，即Control端点传命令块，Bulk传数据，Interrupt传状态信息，</para>
+                <para>而后来计算机行业的发展了，Floppy类的设置很少用了，存储数据的话，多数开始用Flash Memory了，再加上通过合理规划，可以用同一种端点，即Bulk端点，传输上述三种信息，即命令块，数据，状态，</para>
+                <para>因此，只需要物理上实现一个Bulk端点，节省掉了其他两个端点：Control端点和Interrupt端点，达到了物理上实现起来方便和节省资源，而达到同样的信息传输的目的。</para>
+                <para>此部分理解，有待进一步考证。</para>
+                <para></para>
+                <para>【总结】</para>
+                <para>USB MSC Bulk-Only (BBB) 协议，是我们要重点关注的对象。因为我们的U盘和USB主机（PC端）直接信息交互，主要是用此协议。</para>
+            </sect4>
+        </sect3>
+        
+        <sect3 xml:id="ufi_command_spec"><title>USB MSC UFI Command Specification</title>
+            <para>UFI，即Universal Floppy Interface，因此看名字就知道，是关于软盘的。</para>
+            <para>此USB MSC UFI规范，定义了UFI命令集合（Command Set），设计出来此规范，就是用于软盘的。此UFI命令集合，是基于SCSI-2 和SFF-8070i命令集合的。</para>
+            <para></para>
+            <para>【总结】</para>
+            <para>看完上面的解释，就明白了，我们此处关心的是U盘，是USB Flash Memory类型的，不是Floppy Disk类型的，所以，此处也可以不关心，暂忽略之。</para>
+        </sect3>
+        
+        <sect3 xml:id="bootability_spec"><title>USB MSC Bootability Specification</title>
+            <para>目前常见的电脑启动，很多都是从MSC大容量存储设备中启动的，比如硬盘。</para>
+            <para>因此，设计了这个规范，以使得操作系统可以从USB MSC设备上启动。关于此规范的具体内容，主要是定义了一些命令和相关的一些数据的定义。</para>
+            <para>即，如果你想要实现让操作系统从你的这个MSC设备启动，那么你就要实现对应的CDB（Command Descriptor Block，命令描述符块）或者Data数据。</para>
+            <para></para>
+            <para>【总结】</para>
+            <para>我们主要关心U盘如何和主机数据交互，暂不关心是否能否从此U盘启动，所以也可不太关心，暂忽略之。</para>
+        </sect3>
+
+        <sect3 xml:id="compliance_test_spec"><title>USB MSC Compliance Test Specification</title>
+            <para></para>
+            <para>【总结】</para>
+            <para>无须多解释，看名字就知道，是一个关于兼容性测试的规范，和我们此处所关心的U盘和主机的数据交互，关系不大，暂忽略之。</para>
+        </sect3>
+
+        <sect3 xml:id="lockable_storage_spec"><title>USB Lockable Storage Devices Feature Specification</title>
+            <para>“Lockable Storage Devices Feature Specification”，简称为 LSD FS。</para>
+            <para>“Lockable”的意思是，可锁定，即锁定以防止其他人访问或者写入，即变成只读，甚至不允许其他人再访问。</para>
+            <para>说白了就是对USB存储设备的安全控制方面的规范。</para>
+            <para>而基于目前还没有一个标准的规范去定义，如何去控制那些对于USB存储设备的访问，所以此处才定义了一个这么个和访问控制相关的协议。</para>
+            <para>此协议可实现允许主机Host或者设备Device去锁定Lock或者解锁Unlock 对应的存储设备。</para>
+            <para></para>
+            <para>【总结】</para>
+            <para>和安全存储和权限控制相关的协议，我们此处也是暂不关心，可忽略之。</para>
+        </sect3>
+
+        <sect3 xml:id="uasp"><title>USB MSC USB Attached SCSI Protocol (UASP)</title>
+            <para>“Attached”顾名思义，是附在某个上面的，此处即附在SCSI协议的上面的，即SCSI协议的补充部分。</para>
+            <para>UASP规范，定义了关于如何在USB 2.0和USB 3.0中，UAS的传输标准是如何实现的，并且给出了一些范例和一些推荐的做法。</para>
+            
+            <sect4 xml:id="exist_scsi_why_uasp"><title>已有SCSI协议，为何还要再弄一个UASP</title>
+                <para>既然已经有了对应的SCSI协议，用于发送对应命令，实现对应功能。作为U盘等应用的话，直接实现对应的协议，符合对应的规范，不是也就可以实现对应功能了吗，为何还要另外再弄出一个SSCI的附属协议UASP？</para>
+                <para>那是因为，原先的BOT（Bulk Only Transport），虽然协议简单已实现，适合用于大容量存储设备中，但其就像一个单线程，不能同时并行执行多个传输。</para>
+                <para>即，对于BOT，每一个由Host发起数据传输（transaction），都必须等待设备完成，然后设备再返回对应的已完成状态信息，然后才能开始下一次数据传输。这样的话，对于整个数据传输过程的话，就造成了一个很大（大概有20%）的浪费（overhead）。</para>
+                <para>而对于USB 3.0来说，速度从USB 2.0的480Mb/s变成了 5.0Gb/s，而如果继续用BOT的话，那么相对来说CPU性能的利用率很低，USB传输速度也不太高，例如，有研究表明，2.4 GHz Core Duo™的CPU，利用率只要大概12%，CPU传输速度只有大约250MB/s，而USB 3.0的理论速度是5.0Gb/s=640MB/s，即还不到理论最大速度的一半。</para>
+                <para>因此，才有了这个UASP，对于SCSI协议进行了补充，以提高USB 2.0的USB总线利用率，和充分利用USB 3.0的全双工能力，可以使得传输速度达到大约400MB/s。此新的协议UASP的实现，也需要对应的新的Host端的软件，新的Device端的固件（Firmware）。</para>
+                <para>为了实现设备的向后兼容性，Device同时支持BOT和UAS。</para>
+                <para>而此UASP规范，定义了就是如何在USB 2.0和USB 3.0上实现对应的UAS协议。</para>
+                <para>当Host和Device都实现了此UAS协议的话，那么Host将通过Host端的SCSI Software Stack去访问Device，而USB的Interface也将从功能上看，变成Host Stack中的另外一个SCSI Host Adapter。Device需要实现SAM4的架构模型，这样Host也就可以查询（Queue）Device中的命令了，以及对应性能的提升。</para>
+                <para></para>
+                <para>【总结】</para>
+                <para>为了克服旧的BOT协议的总线利用率不高的缺点，所以定义了新的UAS协议，即UASP，来提升USB的传输效率，提升USB速度。</para>
+                <para>当然，我们此处为了实现U盘功能的话，当然希望性能越高越好了，所以，这个协议也是我们应该好好研究的。</para>
+            </sect4>
+        </sect3>
+    </sect2>
+    
+    <sect2 xml:id="usb_msc_protocols_relation"><title>USB MSC的各个协议之间关系总结</title>
+        <para>为了说明清楚USB Mass Storage各个协议的关系，我们先给这些协议编个号：</para>
+        <para><emphasis>①</emphasis>USB Mass Storage Class Control/Bulk/Interrupt (CBI) Transport</para>
+        <para><emphasis>②</emphasis>USB Mass Storage Class Bulk-Only (BBB) Transport</para>
+        <para><emphasis>③</emphasis>USB Mass Storage Class Universal Floppy Interface (UFI) Command Specification</para>
+        <para><emphasis>④</emphasis>USB Mass Storage Class Bootability Specification</para>
+        <para><emphasis>⑤</emphasis>USB Mass Storage Class Compliance Test Specification</para>
+        <para><emphasis>⑥</emphasis>USB Lockable Storage Devices Feature Specification (LSD FS)</para>
+        <para><emphasis>⑦</emphasis>USB Mass Storage Class USB Attached SCSI Protocol (UASP)</para>
+        <para>直接用图来表示USB MSC各个协议之间的关系，显得更加直观：</para>
+        <figure id="fg.usb_msc_proto_relation"><title>USB Storage Class Protocol Relation</title>
+            <mediaobject>
+                <imageobject role="html">
+                    <imagedata fileref="images/usb_msc_proto_relation.png" align="left" scalefit="0" width="100%" />
+                </imageobject>
+                <imageobject role="fo">
+                    <imagedata fileref="images/usb_msc_proto_relation.png" align="center" scalefit="1" width="100%"/>
+                </imageobject>
+            </mediaobject>
+        </figure>
+        <para>如上图，我们U盘实现的功能，主要就是数据的读写，而Device和Host之间的数据通信，主要有两种：</para>
+        <orderedlist>
+            <listitem>CBI：主要用于Floppy设备，所以新的设备，都很少用此协议</listitem>
+            <listitem>BOT：Bulk-Only Transport，也称BBB（Bulk/Bulk/Bulk），</listitem>
+        </orderedlist>
+        <para>而对于BOT/BBB来说，对其提高USB总线利用率，提高了USB速度后，就是对应的UASP协议，故此处称UASP为BOT的增强版的协议。</para>
+        <para>协议方面说完了，再来看看USB Device这一端。</para>
+        <para>而USB的Device端，根据内部数据存储的介质类型不同，又分两种：</para>
+        <orderedlist>
+            <listitem>一种是Floppy设备，对应用的是UFI Command Set；</listitem>
+            <listitem>而另外一种，就是我们常见的Flash Memory，对应的是用SCSI Command Set。</listitem>
+        </orderedlist>
+        <para>而SCSI协议，本身就是有的了，所以不是属于USB MSC协议范畴，即SCSI只是和USB MSC相关的协议。</para>
+        <para>同样的，对于USB Device本身，如果需要一些用到其他的特性，比如可启动性，兼容性，可锁定性等等，那么分别对应的规范是</para>
+        <para><emphasis>④</emphasis>USB Mass Storage Class Bootability Specification</para>
+        <para><emphasis>⑤</emphasis>USB Mass Storage Class Compliance Test Specification</para>
+        <para><emphasis>⑥</emphasis>USB Lockable Storage Devices Feature Specification (LSD FS)</para>
+        <para></para>
+        <para>【总结】</para>
+        <para>至此，各个协议和规范之间的关系，就很容易理解了。上面这么多协议中，其中我们所要关心的，只有三个规范，如前面的图中，已经用星号标识出来了：</para>
+        <orderedlist>
+            <listitem>
+                <para>最需要关心的是BOT，即Host和Device间数据通讯的协议</para>
+                <para><emphasis>★★★ ②</emphasis>USB Mass Storage Class Bulk-Only (BBB) Transport</para>
+            </listitem>
+            <listitem>
+                <para>其次，需要关心USB Device内部和数据存储介质之间通信的协议</para>
+                <para><emphasis>★★</emphasis> SCSI - Small Computer System Interface</para>
+            </listitem>
+            <listitem>
+                <para>最后，对于，如果要实现更好的性能，那么需要关心BOT的升级版</para>
+                <para><emphasis>★⑦</emphasis>USB Mass Storage Class USB Attached SCSI Protocol (UASP)</para>
+            </listitem>
+        </orderedlist>
+    </sect2>
+    
+    <sect2 xml:id="udisk_usb_class_subclass_protocol_relation"><title>U盘与USB中的Class，Subclass和Protocol的对应关系</title>
+        <para>对应的，了解USB的都知道，每个设备的描述符中，都有对应下面这几个域：</para>
+        <itemizedlist>
+            <listitem>bInterfaceClass</listitem>
+            <listitem>bInterfaceSubClass</listitem>
+            <listitem>bInterfaceProtocol</listitem>
+        </itemizedlist>
+        <para>分别对应着USB的Class，Subclass，Protocol。</para>
+        <para>而对于我们此处的U盘：</para>
+        
+        <sect3 xml:id="binterfaceclass_0x08"><title>bInterfaceClass=0x08=Mass Storage</title>
+            <para>Class就是USB Mass Storage Class，</para>
+        </sect3>
+        
+        <sect3 xml:id="binterfacesubclass_0x06"><title>bInterfaceSubClass=0x06=SCSI Transparent</title>
+            <para>Subclass，所支持的列表如下：</para>
+            <figure id="fg.subclass_map_cmd_block_spec"><title>SubClass Codes Mapped to Command Block Specifications</title>
+                <mediaobject>
+                    <imageobject role="html">
+                        <imagedata fileref="images/subclass_map_cmd_block_spec.jpg" align="left" scalefit="0" width="100%" />
+                    </imageobject>
+                    <imageobject role="fo">
+                        <imagedata fileref="images/subclass_map_cmd_block_spec.jpg" align="center" scalefit="1" width="100%"/>
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </sect3>
+        
+        <sect3 xml:id="binterfaceprotocol_0x50"><title>bInterfaceProtocol=0x50=Bulk Only Transport</title>
+            <para>Protocol，所支持的列表如下：</para>
+            <figure id="fg.mst_protocol"><title>Mass Storage Transport Protocol</title>
+                <mediaobject>
+                    <imageobject role="html">
+                        <imagedata fileref="images/mst_protocol.jpg" align="left" scalefit="0" width="100%" />
+                    </imageobject>
+                    <imageobject role="fo">
+                        <imagedata fileref="images/mst_protocol.jpg" align="center" scalefit="1" width="100%"/>
+                    </imageobject>
+                </mediaobject>
+            </figure>
+            <para>从上面这些规范中所定义的支持的协议来看，加上颜色框的那几个，也就是我们前面所解释过的，需要我们关心和研究的协议，即SCSI，BBB和UAS。</para>
+        </sect3>
+    </sect2>
+</sect1>
+
+<sect1 xml:id="usb_msc_soft_implement"><title>USB Mass Storage相关的软件实现</title>
+    <para></para>
+</sect1>
+
+</chapter>

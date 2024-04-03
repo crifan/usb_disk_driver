@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding="utf-8"?>
+
+<!DOCTYPE preface>
+
+<preface    xml:id="preface"
+    xmlns="http://docbook.org/ns/docbook"
+    xmlns:xl="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:ns5="http://www.w3.org/1998/Math/MathML"
+    xmlns:ns4="http://www.w3.org/1999/xhtml"
+    xmlns:ns3="http://www.w3.org/2000/svg"
+    xmlns:ns="http://docbook.org/ns/docbook">
+<title>正文之前</title>
+
+<sect1 xml:id="purpose"><title>此文目的</title>
+    <para>关于U盘，估计大家都用过。</para>
+    <para>比如，笔者手上的宇瞻AH320的8G的U盘：</para>
+    <figure id="fg.udisk_ah320"><title>U盘</title>
+        <mediaobject>
+            <imageobject role="html">
+                <imagedata fileref="images/udisk_ah320.jpg" align="left" scalefit="0" width="100%" />
+            </imageobject>
+            <imageobject role="fo">
+                <imagedata fileref="images/udisk_ah320.jpg" align="center" scalefit="1" width="60%"/>
+            </imageobject>
+        </mediaobject>
+    </figure>
+    <para>最常见的用法就是，直接将此8GU盘插到电脑的USB口上，然后系统（Windows的XP或者Linux）就会自动检测到你的U盘然后生成一个移动盘符，然后你就可以打开对应盘符，读写文件数据了。</para>
+    <para>而此文呢，目的就是，要搞懂，作为驱动开发者来说，对于这样一个U盘，如何在Linux平台下，去实现U盘驱动，即USB Mass Storage驱动，实现驱动时，需要做哪些事情，以及如何去实现这些事情。</para>
+    <para>关于USB，其实网上也有不少相关的文章，但是笔者觉得太多帖子，很多帖子，也只是介绍USB协议，而如何在Linux下面实现驱动，却很少提及。或者说是，理论多，实践少，东一块，西一块，很少能把相关知识有机的结合起来，尤其是软件，硬件，系统框架等结合起来一起说明的，导致看了很多这样的帖子，还是似懂非懂。</para>
+    <para>关于USB或者说多数计算机方面的技术文章，如果有说得明白的，往往都是老外写的。</para>
+    <para>所以，为了实现有中文的帖子，也能把问题说明白，所以才有此文的诞生。</para>
+    <para>所以，简述此文目的：</para>
+    <orderedlist>
+        <listitem>首先，算为自己学习USB的过程，做个记录和总结，以备后查。</listitem>
+        <listitem>对于其他不懂Linux和USB的人，看了此文后，可以对Linux，USB等有个基本的认识。</listitem>
+        <listitem>对于了解Linux和USB的人，搞开发的人，尤其是Linux下USB驱动开发的人，看了此文后，真正能搞懂Linux下USB的Mass Storage的框架，和自己去实现对应的U盘驱动的时候，数据读写的前后流程，而其中，系统做了哪些事情，需要我们自己做哪些事情。</listitem>
+    </orderedlist>
+    <para>总的说来，本人写任何帖子，要么不写，要么就写的逻辑清晰，让人看得明白。</para>
+    <para>就像某人说的，看了我写的东西，能达到“醍醐灌顶”的效果，这才是我写东西的终极目标。</para>
+</sect1>
+
+<sect1 xml:id="prerequisite"><title>阅读此文所需要的前提知识</title>
+    <para>尽可能使得大家不需要有太多的基础，也能看懂此文。</para>
+    <para>即不需要对USB以及USB Mass Storage以及Linux有太多知识，然后看了此文，看了此文后，大概清楚这三者是什么，然后想要在Linux下面实现USB Mass Storage的驱动的话，自己需要做哪些事情，以及大概怎么做。</para>
+    <para>而如果想要实现真正的Linux下U盘驱动开发，那么最基本的一些知识，包括Linux是啥，USB大概是啥，之类的，那你至少多少有些了解，这也才能看懂后续内容。</para>
+</sect1>
+
+<sect1 xml:id="declaration"><title>声明</title>
+    <para>此文不可能面面俱到，但是旨在把问题说清楚的目的，又会在具体内容方面，尽量做到面面俱到，因此，也会使得整个文章显得很臃肿，不过也因此方便了，不了解的人去看懂后续所要解释的内容。</para>
+    <para>提及一下，文中一些内容的表述，是中英文掺杂，主要是因为有些含义，用英文表述更加贴切，就懒得再去费时费力翻译为中文了。</para>
+    <para>版权所有，欢迎转载，但请注明作者：crifan。谢谢合作。</para>
+    <para>水平有限，难免有误，欢迎任何意见和建议：admin (At) crifan.com</para>
+</sect1>
+
+</preface>

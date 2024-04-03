@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding="utf-8"?>
+
+<!DOCTYPE chapter
+[
+
+<!ENTITY % crl_ent PUBLIC "crl.ent" 'http://www.crifan.com/files/res/docbook/entity/crl.ent'>
+%crl_ent;
+
+]>
+
+<chapter    xml:id="ch01_usb_basics"
+    xmlns="http://docbook.org/ns/docbook"
+    xmlns:xl="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:ns5="http://www.w3.org/1998/Math/MathML"
+    xmlns:ns4="http://www.w3.org/1999/xhtml"
+    xmlns:ns3="http://www.w3.org/2000/svg"
+    xmlns:ns="http://docbook.org/ns/docbook">
+<title>USB基本知识</title>
+<abstract></abstract>
+<para>了解计算机行业的技术，最好的资料，是官方的规范，其实就是一堆文档，多数是PDF格式的文件。</para>
+<para>关于USB的基础知识，不像其他多数协议，只是和软件相关，USB协议，总的来说，应该是涉及非常多的规范和协议，涉及太多的软件，硬件，机械等方方面面。</para>
+<para>之所以出现USB协议涉及内容太多太广，看起来太繁杂。</para>
+<para>关于USB相关的基础知识，可以参考笔者的另一篇文章：<link xl:href="http://www.crifan.com/files/doc/docbook/usb_basic/release/html/usb_basic.html">USB基础知识概论</link></para>
+
+<sect1 xml:id="usb_hardware"><title>USB的硬件</title>
+    <para></para>
+</sect1>
+
+<sect1 xml:id="usb_protocol"><title>USB相关的协议</title>
+    <para></para>
+</sect1>
+
+<sect1 xml:id="usb_soft_implement"><title>USB相关的软件实现</title>
+    <para></para>
+</sect1>
+
+</chapter>

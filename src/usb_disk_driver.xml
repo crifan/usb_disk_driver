@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding="utf-8"?>
+
+<!DOCTYPE book
+[
+
+<!ENTITY cur_book_name      "usb_disk_driver" >
+<!ENTITY publish_date       "2013-09-05" >
+<!ENTITY release_version    "0.7" >
+
+<!ENTITY copyrith_year "2013" >
+<!ENTITY entity_common_multi_format     SYSTEM  "../../entity_common_multi_format.xml">
+<!ENTITY entity_common_publish_info     SYSTEM  "../../entity_common_publish_info.xml">
+]>
+
+<book version="5.0"
+    xmlns="http://docbook.org/ns/docbook"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:xl="http://www.w3.org/1999/xlink"
+    
+    xml:lang="zh_CN"
+    >
+
+<info>
+    <title>如何实现Linux下的U盘（USB Mass Storage）驱动</title>
+    <subtitle>How to Write Linux USB MSC (Mass Storage Class) Driver</subtitle>
+    <keywordset>
+        <keyword>USB</keyword>
+        <keyword>MSC</keyword>
+        <keyword>Mass Storage</keyword>
+        <keyword>U盘</keyword>
+        <keyword>驱动</keyword>
+    </keywordset>
+
+    <abstract>
+        <para>本文主要介绍了USB Mass Storage的相关的各种协议之间的关系，以及如何在Linux的USB驱动框架下实现U盘驱动</para>
+        &entity_common_multi_format;
+    </abstract>
+
+    <revhistory>
+        <revision>
+            <revnumber>0.4</revnumber>
+            <date>2011-07-01</date>
+            <revremark>
+                <orderedlist>
+                    <listitem>介绍如何在Linux下实现U盘驱动</listitem>
+                </orderedlist>
+            </revremark>
+            <authorinitials>crl</authorinitials>
+        </revision>
+        <revision>
+            <revnumber>&release_version;</revnumber>
+            <date>&publish_date;</date>
+            <revremark>
+                <orderedlist>
+                    <listitem>通过Docbook发布</listitem>
+                    <listitem>更新所有xml:id</listitem>
+                </orderedlist>
+            </revremark>
+            <authorinitials>crl</authorinitials>
+        </revision>
+    </revhistory>
+
+    &entity_common_publish_info;
+</info>
+
+<xi:include href="glossary.xml"/>
+<xi:include href="preface.xml"/>
+<xi:include href="ch01_usb_basics.xml"/>
+<xi:include href="ch02_msc_basic.xml"/>
+<xi:include href="ch03_disk_driver_flow.xml"/>
+<xi:include href="ch04_arch_done.xml"/>
+<xi:include href="ch05_self_need_do.xml"/>
+<xi:include href="reference.xml"/>
+
+</book>
